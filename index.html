@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>V7 — Painel de Clientes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0D0D0D;
+    --bg-card: #161616;
+    --bg-card-hover: #1c1c1c;
+    --border: #2a2a2a;
+    --border-soft: #1f1f1f;
+    --purple: #9900FF;
+    --purple-soft: rgba(153,0,255,0.14);
+    --purple-line: rgba(153,0,255,0.35);
+    --text: #F5F5F5;
+    --text-dim: #9a9a9a;
+    --text-faint: #5f5f5f;
+    --green: #3ddc84;
+    --amber: #ffb020;
+    --red: #ff5a5a;
+    --radius: 14px;
+  }
+  *{ box-sizing: border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Manrope', sans-serif;
+    min-height: 100vh;
+    padding: 28px 18px 80px;
+  }
+  .wrap{ max-width: 1080px; margin: 0 auto; }
+
+  /* Header */
+  header{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom: 28px; flex-wrap: wrap; gap: 14px;
+  }
+  .brand{ display:flex; align-items:center; gap: 10px; }
+  .brand .mark{
+    width: 34px; height:34px; border-radius: 9px;
+    background: linear-gradient(135deg, var(--purple), #5c00b3);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Sora'; font-weight:800; font-size: 15px; color:#fff;
+  }
+  .brand h1{ font-family:'Sora'; font-size: 18px; font-weight:700; margin:0; letter-spacing: -0.01em; }
+  .brand span{ display:block; font-size: 11.5px; color: var(--text-dim); font-weight: 500; }
+  .add-btn{
+    background: var(--purple); color:#fff; border:none; padding: 11px 18px;
+    border-radius: 10px; font-family:'Sora'; font-weight:700; font-size: 14px;
+    cursor:pointer; display:flex; align-items:center; gap:8px;
+    transition: transform .15s ease, box-shadow .15s ease;
+    box-shadow: 0 0 0 rgba(153,0,255,0);
+  }
+  .add-btn:hover{ transform: translateY(-1px); box-shadow: 0 6px 20px rgba(153,0,255,0.35); }
+
+  /* Summary cards */
+  .summary{
+    display:grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 26px;
+  }
+  @media(max-width: 820px){ .summary{ grid-template-columns: repeat(2,1fr); } }
+  .card{
+    background: var(--bg-card); border:1px solid var(--border-soft);
+    border-radius: var(--radius); padding: 18px;
+  }
+  .card .label{ font-size: 12px; color: var(--text-dim); font-weight:600; text-transform: uppercase; letter-spacing: .04em; margin-bottom:8px; }
+  .card .value{ font-family:'Sora'; font-size: 24px; font-weight: 800; letter-spacing: -0.02em; }
+  .card .sub{ font-size: 12px; color: var(--text-faint); margin-top: 4px; }
+  .card.accent{ border-color: var(--purple-line); background: linear-gradient(180deg, var(--purple-soft), var(--bg-card) 70%); }
+  .card.accent .value{ color: #c680ff; }
+
+  /* Section title */
+  .section-head{ display:flex; align-items:center; justify-content:space-between; margin: 30px 0 12px; }
+  .section-head h2{ font-family:'Sora'; font-size: 15px; font-weight:700; margin:0; color: var(--text); }
+  .section-head .count{ font-size: 12.5px; color: var(--text-faint); }
+
+  /* Client list */
+  .clients{ display:flex; flex-direction:column; gap: 8px; }
+  .client-row{
+    background: var(--bg-card); border:1px solid var(--border-soft); border-radius: 12px;
+    padding: 14px 16px; display:grid; grid-template-columns: 1.5fr 1fr 1fr 1fr 1fr auto; align-items:center; gap: 10px;
+    transition: border-color .15s ease, background .15s ease;
+  }
+  .client-row:hover{ border-color: var(--border); background: var(--bg-card-hover); }
+  @media(max-width: 760px){
+    .client-row{ grid-template-columns: 1fr; }
+    .client-row .field{ display:flex; justify-content:space-between; }
+    .client-row .field .k{ display:inline; }
+  }
+  .client-row .field .k{ display:none; font-size: 11px; color: var(--text-faint); }
+  @media(max-width: 760px){ .client-row .field .k{ display:inline; } }
+
+  .name-block{ display:flex; align-items:center; gap: 10px; min-width:0; }
+  .dot{ width: 8px; height:8px; border-radius:50%; flex-shrink:0; }
+  .dot.ativo{ background: var(--green); box-shadow: 0 0 8px rgba(61,220,132,0.6); }
+  .dot.pausado{ background: var(--amber); }
+  .dot.cancelado{ background: var(--red); }
+  .name-block .info{ min-width:0; }
+  .name-block .nome{ font-weight:700; font-size: 14.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .name-block .desde{ font-size: 11.5px; color: var(--text-faint); }
+
+  .field{ font-size: 13.5px; }
+  .field .val{ font-weight:600; }
+  .field .sub{ font-size: 11.5px; color: var(--text-faint); }
+
+  .row-actions{ display:flex; gap:6px; justify-self:end; }
+  .icon-btn{
+    background: transparent; border:1px solid var(--border); color: var(--text-dim);
+    width: 30px; height:30px; border-radius:8px; cursor:pointer; font-size: 13px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .icon-btn:hover{ border-color: var(--purple-line); color:#fff; }
+
+  .empty{
+    text-align:center; padding: 50px 20px; color: var(--text-faint);
+    border: 1px dashed var(--border); border-radius: var(--radius); font-size: 14px;
+  }
+
+  /* Modal */
+  .overlay{
+    position:fixed; inset:0; background: rgba(0,0,0,0.6); backdrop-filter: blur(3px);
+    display:flex; align-items:center; justify-content:center; z-index: 50; padding: 16px;
+  }
+  .hidden{ display:none !important; }
+  .modal{
+    background: #141414; border:1px solid var(--border); border-radius: 16px;
+    width: 100%; max-width: 440px; padding: 24px; max-height: 90vh; overflow-y:auto;
+  }
+  .modal h3{ font-family:'Sora'; font-size:17px; margin:0 0 18px; }
+  .form-group{ margin-bottom: 14px; }
+  .form-group label{ display:block; font-size: 12.5px; color: var(--text-dim); margin-bottom:6px; font-weight:600; }
+  .form-group input, .form-group select{
+    width:100%; background: #0f0f0f; border:1px solid var(--border); color: var(--text);
+    padding: 10px 12px; border-radius: 9px; font-size: 14px; font-family:'Manrope';
+  }
+  .form-group input:focus, .form-group select:focus{ outline:none; border-color: var(--purple); }
+  .form-row{ display:grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form-hint{ font-size:11.5px; color: var(--text-faint); margin-top:4px; }
+  .modal-actions{ display:flex; gap:10px; margin-top: 20px; }
+  .btn-secondary{
+    flex:1; background: transparent; border:1px solid var(--border); color: var(--text-dim);
+    padding: 11px; border-radius: 10px; font-family:'Sora'; font-weight:700; font-size:13.5px; cursor:pointer;
+  }
+  .btn-primary{
+    flex:1; background: var(--purple); border:none; color:#fff;
+    padding: 11px; border-radius: 10px; font-family:'Sora'; font-weight:700; font-size:13.5px; cursor:pointer;
+  }
+  .btn-danger{ color: var(--red); border-color: rgba(255,90,90,0.3); }
+
+  .toast{
+    position: fixed; bottom: 20px; left:50%; transform: translateX(-50%);
+    background: #1c1c1c; border:1px solid var(--purple-line); padding: 12px 18px;
+    border-radius: 10px; font-size: 13.5px; z-index: 60; opacity:0; transition: opacity .25s ease;
+    pointer-events:none;
+  }
+  .toast.show{ opacity:1; }
+
+  .loading{ text-align:center; padding: 60px 0; color: var(--text-faint); font-size:14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="brand">
+      <div class="mark">V7</div>
+      <div>
+        <h1>Painel de Clientes</h1>
+        <span>V7 Digital Studio</span>
+      </div>
+    </div>
+    <button class="add-btn" onclick="openModal()">+ Novo cliente</button>
+  </header>
+
+  <div id="loadingState" class="loading">Carregando seus clientes...</div>
+
+  <div id="mainContent" class="hidden">
+    <div class="summary">
+      <div class="card accent">
+        <div class="label">Receita mensal (MRR)</div>
+        <div class="value" id="mrrValue">R$ 0</div>
+        <div class="sub" id="mrrSub">0 clientes ativos</div>
+      </div>
+      <div class="card">
+        <div class="label">Receita projetada (3 meses)</div>
+        <div class="value" id="semestreReceita">R$ 0</div>
+        <div class="sub" id="semestreLabel">clientes ativos hoje</div>
+      </div>
+      <div class="card">
+        <div class="label">Lucro projetado (3 meses)</div>
+        <div class="value" id="semestreLucro">R$ 0</div>
+        <div class="sub">receita − custos informados</div>
+      </div>
+      <div class="card">
+        <div class="label">Próxima cobrança</div>
+        <div class="value" id="proximaCobranca">—</div>
+        <div class="sub" id="proximaCobrancaSub">—</div>
+      </div>
+    </div>
+
+    <div class="section-head">
+      <h2>Clientes</h2>
+      <span class="count" id="clientCount">0 no total</span>
+    </div>
+
+    <div class="clients" id="clientList"></div>
+  </div>
+
+</div>
+
+<!-- Modal -->
+<div class="overlay hidden" id="modalOverlay">
+  <div class="modal">
+    <h3 id="modalTitle">Novo cliente</h3>
+    <input type="hidden" id="clientId">
+
+    <div class="form-group">
+      <label>Nome do cliente / negócio</label>
+      <input type="text" id="fNome" placeholder="Ex: Degust Salgados">
+    </div>
+
+    <div class="form-group">
+      <label>Pagamento único (R$)</label>
+      <input type="number" id="fValorUnico" placeholder="497" min="0" step="0.01">
+    </div>
+
+    <div class="form-group">
+      <label>Assinou o plano mensal?</label>
+      <select id="fTemMensal"><option value="nao">Não</option><option value="sim">Sim</option></select>
+    </div>
+
+    <div class="form-row hidden" id="valorMensalRow">
+      <div class="form-group">
+        <label>Valor mensal (R$)</label>
+        <input type="number" id="fValor" placeholder="497" min="0" step="0.01">
+      </div>
+      <div class="form-group">
+        <label>Data que assinou o plano mensal</label>
+        <input type="date" id="fDataMensal">
+        <div class="form-hint">A primeira cobrança mensal acontece nesta data. Depois, repete mensalmente.</div>
+      </div>
+    </div>
+
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Data que assinou</label>
+        <input type="date" id="fDataAssinatura">
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select id="fStatus">
+          <option value="ativo">Ativo</option>
+          <option value="pausado">Pausado</option>
+          <option value="cancelado">Cancelado</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group" id="cancelDateGroup" style="display:none;">
+      <label>Data de cancelamento</label>
+      <input type="date" id="fDataCancelamento">
+    </div>
+
+    <div class="form-group">
+      <label>Custo mensal (opcional)</label>
+      <input type="number" id="fCusto" placeholder="0" min="0" step="0.01">
+      <div class="form-hint">Ex: ferramenta, anúncio que você banca, etc. Usado só pra calcular o lucro estimado.</div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-secondary" id="deleteBtn" onclick="deleteClient()" style="display:none;">Excluir</button>
+      <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
+      <button class="btn-primary" onclick="saveClient()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const STORAGE_KEY = 'v7-clientes-lista';
+let clients = [];
+
+const fmt = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+
+async function loadClients(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    clients = raw ? JSON.parse(raw).map(normalizeClient) : [];
+  }catch(e){
+    clients = [];
+  }
+  document.getElementById('loadingState').classList.add('hidden');
+  document.getElementById('mainContent').classList.remove('hidden');
+  render();
+}
+
+async function persist(){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(clients));
+    return true;
+  }catch(e){
+    console.error('Erro ao salvar clientes:', e);
+    showToast('Não foi possível salvar neste navegador.');
+    return false;
+  }
+}
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=> t.classList.remove('show'), 2200);
+}
+
+function uid(){ return 'c_' + Math.random().toString(36).slice(2, 10); }
+
+function openModal(client){
+  document.getElementById('modalOverlay').classList.remove('hidden');
+  if(client){
+    document.getElementById('modalTitle').textContent = 'Editar cliente';
+    document.getElementById('clientId').value = client.id;
+    document.getElementById('fNome').value = client.nome;
+    document.getElementById('fTemMensal').value = client.temMensal ? 'sim' : 'nao';
+    document.getElementById('fValorUnico').value = client.valorUnico ?? client.valor ?? '';
+    document.getElementById('fValor').value = client.temMensal ? (client.valorMensal ?? 0) : '';
+    document.getElementById('fDataMensal').value = client.temMensal ? (client.dataMensal ?? '') : '';
+    document.getElementById('fDataAssinatura').value = client.dataAssinatura;
+    document.getElementById('fStatus').value = client.status;
+    document.getElementById('fDataCancelamento').value = client.dataCancelamento || '';
+    document.getElementById('fCusto').value = client.custo || 0;
+    document.getElementById('deleteBtn').style.display = 'block';
+  } else {
+    document.getElementById('modalTitle').textContent = 'Novo cliente';
+    document.getElementById('clientId').value = '';
+    document.getElementById('fNome').value = '';
+    document.getElementById('fTemMensal').value = 'nao';
+    document.getElementById('fValor').value = '';
+    document.getElementById('fValorUnico').value = '';
+    document.getElementById('fDataMensal').value = '';
+    document.getElementById('fDataAssinatura').value = localDateInputValue(new Date());
+    document.getElementById('fStatus').value = 'ativo';
+    document.getElementById('fDataCancelamento').value = '';
+    document.getElementById('fCusto').value = '';
+    document.getElementById('deleteBtn').style.display = 'none';
+  }
+  toggleCancelField();
+  toggleTipoPagamento();
+}
+
+function closeModal(){
+  document.getElementById('modalOverlay').classList.add('hidden');
+}
+
+document.getElementById('fStatus').addEventListener('change', toggleCancelField);
+function toggleCancelField(){
+  const status = document.getElementById('fStatus').value;
+  document.getElementById('cancelDateGroup').style.display = status === 'cancelado' ? 'block' : 'none';
+}
+
+document.getElementById('fTemMensal').addEventListener('change', toggleTipoPagamento);
+function toggleTipoPagamento(){
+  const temMensal = document.getElementById('fTemMensal').value === 'sim';
+  document.getElementById('valorMensalRow').classList.toggle('hidden', !temMensal);
+  if(!temMensal){ document.getElementById('fValor').value=''; document.getElementById('fDataMensal').value=''; }
+}
+
+function localDateInputValue(date){
+  const y = date.getFullYear();
+  const m = String(date.getMonth()+1).padStart(2,'0');
+  const d = String(date.getDate()).padStart(2,'0');
+  return `${y}-${m}-${d}`;
+}
+
+function parseLocalDate(value){
+  if(!value) return null;
+  const [y,m,d] = value.split('-').map(Number);
+  if(!y || !m || !d) return null;
+  const date = new Date(y, m-1, d);
+  return date.getFullYear()===y && date.getMonth()===m-1 && date.getDate()===d ? date : null;
+}
+
+function addMonthsSafe(date, months){
+  const result = new Date(date.getFullYear(), date.getMonth()+months, 1);
+  const lastDay = new Date(result.getFullYear(), result.getMonth()+1, 0).getDate();
+  result.setDate(Math.min(date.getDate(), lastDay));
+  return result;
+}
+
+function formatDateBR(value){
+  const date = parseLocalDate(value);
+  return date ? date.toLocaleDateString('pt-BR') : '—';
+}
+
+function normalizeClient(c){
+  const temMensal = c.temMensal ?? (c.tipoPagamento !== 'unico');
+  return {
+    id: c.id || uid(),
+    status: c.status || 'ativo',
+    custo: Number(c.custo) || 0,
+    dataAssinatura: c.dataAssinatura || localDateInputValue(new Date()),
+    ...c,
+    valorUnico: Number(c.valorUnico ?? (c.tipoPagamento === 'unico' ? c.valor : 0) ?? 0),
+    temMensal,
+    valorMensal: temMensal ? Number(c.valorMensal ?? (c.tipoPagamento !== 'unico' ? c.valor : 0) ?? 0) : 0,
+    dataMensal: temMensal ? (c.dataMensal ?? c.dataAssinatura ?? '') : ''
+  };
+}
+
+async function saveClient(){
+  const nome = document.getElementById('fNome').value.trim();
+  const valorUnico = parseFloat(document.getElementById('fValorUnico').value);
+  const temMensal = document.getElementById('fTemMensal').value === 'sim';
+  const valorMensal = temMensal ? parseFloat(document.getElementById('fValor').value) : 0;
+  const dataMensal = temMensal ? document.getElementById('fDataMensal').value : '';
+  const dataAssinatura = document.getElementById('fDataAssinatura').value;
+  const status = document.getElementById('fStatus').value;
+  const dataCancelamento = document.getElementById('fDataCancelamento').value;
+  const custo = parseFloat(document.getElementById('fCusto').value) || 0;
+
+  if(!nome || isNaN(valorUnico) || !dataAssinatura){
+    showToast('Preenche nome, pagamento único e data de assinatura.');
+    return;
+  }
+  if(!parseLocalDate(dataAssinatura)){
+    showToast('A data de assinatura é inválida.');
+    return;
+  }
+  if(temMensal){
+    if(isNaN(valorMensal) || valorMensal < 0 || !dataMensal){
+      showToast('Preenche o valor mensal e a data que assinou o plano mensal.');
+      return;
+    }
+    if(!parseLocalDate(dataMensal)){
+      showToast('A data do plano mensal é inválida.');
+      return;
+    }
+  }
+  if(status === 'cancelado' && dataCancelamento && !parseLocalDate(dataCancelamento)){
+    showToast('A data de cancelamento é inválida.');
+    return;
+  }
+
+  const id = document.getElementById('clientId').value;
+  const data = {
+    nome,
+    valor: valorUnico,
+    valorUnico,
+    temMensal,
+    valorMensal,
+    dataMensal,
+    // Campo legado mantido para compatibilidade com dados antigos.
+    dia: temMensal && dataMensal ? parseLocalDate(dataMensal).getDate() : null,
+    dataAssinatura,
+    status,
+    dataCancelamento: status === 'cancelado' ? dataCancelamento : '',
+    custo
+  };
+
+  if(id){
+    const idx = clients.findIndex(c => c.id === id);
+    if(idx > -1) clients[idx] = { ...normalizeClient(clients[idx]), ...data };
+  } else {
+    clients.push({ id: uid(), ...data });
+  }
+
+  if(await persist()){
+    closeModal();
+    render();
+    showToast('Cliente salvo.');
+  }
+}
+
+async function deleteClient(){
+  const id = document.getElementById('clientId').value;
+  if(!id) return;
+  if(!confirm('Tem certeza que quer excluir esse cliente?')) return;
+  clients = clients.filter(c => c.id !== id);
+  if(await persist()){
+    closeModal();
+    render();
+    showToast('Cliente excluído.');
+  }
+}
+
+function editClient(id){
+  const c = clients.find(x => x.id === id);
+  if(c) openModal(c);
+}
+
+// ---- Cálculos ----
+
+const PROJECTION_MONTHS = 3;
+
+function monthlyStartDate(c){
+  return parseLocalDate(c.dataMensal || '');
+}
+
+function nextMonthlyChargeDate(c, today = new Date()){
+  const start = monthlyStartDate(c);
+  if(!start) return null;
+
+  // A data informada no plano mensal é a própria data da primeira cobrança.
+  // As cobranças seguintes acontecem mensalmente no mesmo dia (com ajuste para meses menores).
+  let charge = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+  const base = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+  while(charge < base){
+    charge = addMonthsSafe(charge, 1);
+  }
+  return charge;
+}
+
+function countMonthlyChargesInProjection(c, startDate, months){
+  const first = monthlyStartDate(c);
+  if(!first || !c.temMensal || c.valorMensal <= 0) return 0;
+
+  const windowStart = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+  const windowEnd = new Date(windowStart.getFullYear(), windowStart.getMonth()+months-1, windowStart.getDate());
+
+  let charge = new Date(first.getFullYear(), first.getMonth(), first.getDate());
+  let count = 0;
+
+  while(charge < windowStart){
+    charge = addMonthsSafe(charge, 1);
+  }
+
+  while(charge <= windowEnd){
+    count++;
+    charge = addMonthsSafe(charge, 1);
+  }
+  return count;
+}
+
+function projecaoMeses(activeClients, nMeses){
+  let receita = 0, custo = 0;
+  const projectionStart = new Date();
+  projectionStart.setHours(0,0,0,0);
+
+  activeClients.forEach(raw => {
+    const c = normalizeClient(raw);
+    receita += c.valorUnico;
+
+    if(c.temMensal && c.valorMensal > 0){
+      const monthlyCharges = countMonthlyChargesInProjection(c, projectionStart, nMeses);
+      receita += c.valorMensal * monthlyCharges;
+      custo += (c.custo || 0) * Math.max(1, monthlyCharges);
+    } else {
+      custo += (c.custo || 0);
+    }
+  });
+  return { receita, custo };
+}
+
+function render(){
+  const today = new Date();
+  const activeClients = clients.filter(c => c.status === 'ativo').map(normalizeClient);
+
+  // MRR: mensalidade contratada, mas o primeiro mês ainda não é cobrado.
+  const mensaisAtivos = activeClients.filter(c => c.temMensal && c.valorMensal > 0 && monthlyStartDate(c));
+  const mrr = mensaisAtivos.reduce((sum,c) => sum + c.valorMensal, 0);
+  document.getElementById('mrrValue').textContent = fmt.format(mrr);
+  document.getElementById('mrrSub').textContent = `${activeClients.length} cliente${activeClients.length!==1?'s':''} ativo${activeClients.length!==1?'s':''}`;
+
+  const { receita: receitaProj, custo: custoProj } = projecaoMeses(activeClients, PROJECTION_MONTHS);
+  document.getElementById('semestreReceita').textContent = fmt.format(receitaProj);
+  document.getElementById('semestreLabel').textContent = `próximos ${PROJECTION_MONTHS} meses`;
+  document.getElementById('semestreLucro').textContent = fmt.format(receitaProj - custoProj);
+
+  // Próxima cobrança mensal real, considerando a data de início do plano.
+  let best = null, bestDate = null;
+  mensaisAtivos.forEach(c => {
+    const charge = nextMonthlyChargeDate(c, today);
+    if(charge && (!bestDate || charge < bestDate)){
+      best = c;
+      bestDate = charge;
+    }
+  });
+
+  if(best && bestDate){
+    const diffDays = Math.ceil((bestDate - new Date(today.getFullYear(), today.getMonth(), today.getDate())) / 86400000);
+    document.getElementById('proximaCobranca').textContent = bestDate.toLocaleDateString('pt-BR');
+    const when = diffDays === 0 ? 'hoje' : diffDays === 1 ? 'amanhã' : `em ${diffDays} dias`;
+    document.getElementById('proximaCobrancaSub').textContent = `${best.nome} • ${when}`;
+  } else {
+    document.getElementById('proximaCobranca').textContent = '—';
+    document.getElementById('proximaCobrancaSub').textContent = 'Nenhuma cobrança mensal prevista';
+  }
+
+  document.getElementById('clientCount').textContent = `${clients.length} no total`;
+  const list = document.getElementById('clientList');
+  list.innerHTML = '';
+
+  if(clients.length === 0){
+    list.innerHTML = '<div class="empty">Nenhum cliente cadastrado ainda. Clique em "+ Novo cliente" pra começar.</div>';
+    return;
+  }
+
+  const sorted = clients.map(normalizeClient).sort((a,b) => {
+    if(a.status !== b.status) return a.status === 'ativo' ? -1 : 1;
+    const da = monthlyStartDate(a)?.getTime() ?? Number.MAX_SAFE_INTEGER;
+    const db = monthlyStartDate(b)?.getTime() ?? Number.MAX_SAFE_INTEGER;
+    return da - db;
+  });
+
+  sorted.forEach(c => {
+    const row = document.createElement('div');
+    row.className = 'client-row';
+    row.innerHTML = `
+      <div class="name-block">
+        <span class="dot ${c.status}"></span>
+        <div class="info">
+          <div class="nome">${escapeHtml(c.nome)}</div>
+          <div class="desde">assinou em ${formatDateBR(c.dataAssinatura)}</div>
+        </div>
+      </div>
+      <div class="field"><span class="k">Pagamento único: </span><span class="val">${fmt.format(c.valorUnico)}</span><div class="sub">primeiro mês</div></div>
+      <div class="field"><span class="k">Plano mensal: </span><span class="val">${c.temMensal ? fmt.format(c.valorMensal) : 'Não'}</span><div class="sub">${c.temMensal ? 'assinou em ' + formatDateBR(c.dataMensal) : 'sem assinatura mensal'}</div></div>
+      <div class="field"><span class="k">Próxima mensal: </span><span class="val">${c.temMensal ? (nextMonthlyChargeDate(c) ? nextMonthlyChargeDate(c).toLocaleDateString('pt-BR') : '—') : '—'}</span><div class="sub">${c.temMensal ? 'primeira cobrança nesta data' : '—'}</div></div>
+      <div class="field"><span class="k">Status: </span><span class="val" style="text-transform:capitalize">${escapeHtml(c.status)}</span></div>
+      <div class="row-actions">
+        <button class="icon-btn" onclick="editClient('${c.id}')" title="Editar">✎</button>
+      </div>
+    `;
+    list.appendChild(row);
+  });
+}
+
+function escapeHtml(str){
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+loadClients();
+</script>
+</body>
+</html>
